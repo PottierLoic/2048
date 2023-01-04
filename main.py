@@ -3,22 +3,29 @@
 # Creation date : 04/01/2022
 
 # IMPORTS
-import os
 import random as rd
-import tkinter as tk
+from tkinter import *
+from PIL import Image, ImageTk
+
 
 # CONSTANTS
-BACKGROUND_COLOR=""
+BACKGROUND_COLOR="#E0E0E0"
+WIN_COLOR = "#00FF00"
+LOOSE_COLOR = "#FF0000"
+SQUARE_SIZE=50
+BORDER_SIZE=10
+NUMBERS=["img/2.png", "img/4.png", "img/8.png", "img/16.png", "img/32.png", "img/64.png", "img/128.png", "img/256.png", "img/512.png", "img/1024.png", "img/2048.png"]
 
-# main board class, will contain almost of the game def
+# main board class, will contain almost all of the game def
 # does not contain tkinter part
 class Board:
+
     # Main constructor, fill a 4 by 4 list with zeros
     def __init__(self) -> None:
-        self.board=[[0, 0, 0, 2],
-                    [2, 0, 0, 2],
-                    [0, 4, 0, 2],
-                    [0, 0, 0, 2]]
+        self.board=[[0, 0, 0, 0],
+                    [0, 0, 512, 2],
+                    [0, 256, 128, 2048],
+                    [0, 0, 4, 8]]
 
     # This function will randomly add a number in the board
     # Can be a 2 or a 4, will not replace an already filled case
@@ -49,6 +56,7 @@ class Board:
         dy=0
         ax, bx, cx = 0, 4, 1
         ay, by, cy = 0, 4, 1
+        # determine the start end and step for the next for loops
         if direction=="left":
             dx=1
             ax, bx, cx = 0, 3, 1
@@ -87,6 +95,7 @@ class Board:
                         self.board[row][col]=self.board[row+dy][col+dx]
                         self.board[row+dy][col+dx]=0
 
+    # check if there is still empty spaces in the board, if not, return True
     def isLoose(self):
         loose=True
         for row in self.board:
@@ -95,17 +104,96 @@ class Board:
                     loose=False
         return loose
 
+    # check if there is a 2048 in the board, if so, return True
+    def isWin(self):
+        win=False
+        for row in self.board:
+            for col in row:
+                if col==2048:
+                    win=True
+        return win        
 
-b=Board()
+# clear the canvas and recrete all the images based on the actual board values 
+def graphics():
+    canvas.delete("all")
+    for y in range(len(b.board)):
+        for x in range(len(b.board[0])):
+            #create image here
+            if b.board[y][x]!=0:
+                imgList.append((ImageTk.PhotoImage(Image.open("img/"+str(b.board[y][x])+".png").resize((SQUARE_SIZE, SQUARE_SIZE)))))
+                img= Image.open("img/4.png")
+                canvas.create_image(x*SQUARE_SIZE + BORDER_SIZE, y*SQUARE_SIZE+BORDER_SIZE, anchor="nw", image=imgList[-1], tag="case")
 
-b.add_number()
-b.add_number()
+# the following functions are binded to the keyboard arrows
+# each one will juste call the move function with its own parameter
+def leftKey(e):
+    b.move("left")
+    next()
 
-while not b.isLoose():
-    print(b)
-    choice = input("Veuillez entrer la direction : ")
-    if choice in ("left", "right", "up", "down"):
-        b.move(choice)
+def rightKey(e):
+    b.move("right")
+    next()
+
+def upKey(e):
+    b.move("up")
+    next()
+
+def downKey(e):
+    b.move("down")
+    next()
+
+
+# this function will juste update graphics and test the win and loose condition
+# used to avoid redundancy in the 4 function above
+def next():
+    graphics()
+    if b.isLoose():
+        canvas.config(bg=LOOSE_COLOR)
+        label.config(text="FLOPP")
+    elif b.isWin():
+        canvas.config(bg=WIN_COLOR)
+        label.config(text="WINNN")
+    else:
         b.add_number()
-    os.system('cls')  
+
+
+# creating the main window and components
+window = Tk()
+window.title("2048 Game")
+window.resizable(False, False)
+
+label = Label(window, text="2048", font=("consolas", 40))
+label.pack()
+
+canvas = Canvas(window, bg=BACKGROUND_COLOR, height=4*SQUARE_SIZE+BORDER_SIZE*2, width=4*SQUARE_SIZE+BORDER_SIZE*2)
+canvas.pack()
+
+window.update()
+
+windowWidth = window.winfo_width()
+windowHeight = window.winfo_height()
+screenWidth = window.winfo_screenwidth()
+screenHeight = window.winfo_screenheight()
+
+x = int((screenWidth/2) - (windowWidth/2))
+y = int((screenHeight/2) - (windowHeight/2))
+
+window.geometry(f"{windowWidth}x{windowHeight}+{x}+{y}")
+
+# BINDINGS
+window.bind('<Left>', leftKey)
+window.bind('<Right>', rightKey)
+window.bind('<Up>', upKey)
+window.bind('<Down>', downKey)
+
+# GAME
+b=Board()
+b.add_number()
+b.add_number()
+
+imgList=[]
+
+graphics()
+
+window.mainloop()
 
