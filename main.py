@@ -7,7 +7,6 @@ import random as rd
 from tkinter import *
 from PIL import Image, ImageTk
 
-
 # CONSTANTS
 BACKGROUND_COLOR="#E0E0E0"
 WIN_COLOR = "#00FF00"
@@ -23,9 +22,9 @@ class Board:
     # Main constructor, fill a 4 by 4 list with zeros
     def __init__(self) -> None:
         self.board=[[0, 0, 0, 0],
-                    [0, 0, 512, 2],
-                    [0, 256, 128, 2048],
-                    [0, 0, 4, 8]]
+                    [0, 0, 0, 0],
+                    [0, 0,0, 0],
+                    [0, 0, 0, 0]]
 
     # This function will randomly add a number in the board
     # Can be a 2 or a 4, will not replace an already filled case
