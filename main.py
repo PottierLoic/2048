@@ -4,6 +4,7 @@
 
 # IMPORTS
 import random as rd
+import copy
 from tkinter import *
 from PIL import Image, ImageTk
 
@@ -11,9 +12,8 @@ from PIL import Image, ImageTk
 BACKGROUND_COLOR="#E0E0E0"
 WIN_COLOR = "#00FF00"
 LOOSE_COLOR = "#FF0000"
-SQUARE_SIZE=50
+SQUARE_SIZE=100
 BORDER_SIZE=10
-NUMBERS=["img/2.png", "img/4.png", "img/8.png", "img/16.png", "img/32.png", "img/64.png", "img/128.png", "img/256.png", "img/512.png", "img/1024.png", "img/2048.png"]
 
 # main board class, will contain almost all of the game def
 # does not contain tkinter part
@@ -23,7 +23,7 @@ class Board:
     def __init__(self) -> None:
         self.board=[[0, 0, 0, 0],
                     [0, 0, 0, 0],
-                    [0, 0,0, 0],
+                    [0, 0, 0, 0],
                     [0, 0, 0, 0]]
 
     # This function will randomly add a number in the board
@@ -55,6 +55,9 @@ class Board:
         dy=0
         ax, bx, cx = 0, 4, 1
         ay, by, cy = 0, 4, 1
+
+        boardCopy=copy.deepcopy(self.board)
+
         # determine the start end and step for the next for loops
         if direction=="left":
             dx=1
@@ -93,6 +96,14 @@ class Board:
                     if self.board[row][col]==0:
                         self.board[row][col]=self.board[row+dy][col+dx]
                         self.board[row+dy][col+dx]=0
+        
+        same=True
+        for y in range(len(self.board)):
+            for x in range(len(self.board[0])):
+                if self.board[y][x]!=boardCopy[y][x]:
+                    same=False
+        return same
+
 
     # check if there is still empty spaces in the board, if not, return True
     def isLoose(self):
@@ -112,49 +123,66 @@ class Board:
                     win=True
         return win        
 
+# reset the board object and tkinter canvas/labels
+def reset():
+    global b
+    b=Board()
+    b.add_number()
+    b.add_number()
+    canvas.config(bg=BACKGROUND_COLOR)
+    label.config(text="2048")
+    graphics()
+
 # clear the canvas and recrete all the images based on the actual board values 
 def graphics():
-    canvas.delete("all")
+    canvas.delete("case")
     for y in range(len(b.board)):
         for x in range(len(b.board[0])):
+            count=0
+            value=b.board[y][x]
+            while value!=2:
+                if value==0:
+                    break
+                value/=2
+                count+=1
             #create image here
             if b.board[y][x]!=0:
-                imgList.append((ImageTk.PhotoImage(Image.open("img/"+str(b.board[y][x])+".png").resize((SQUARE_SIZE, SQUARE_SIZE)))))
-                img= Image.open("img/4.png")
-                canvas.create_image(x*SQUARE_SIZE + BORDER_SIZE, y*SQUARE_SIZE+BORDER_SIZE, anchor="nw", image=imgList[-1], tag="case")
+                canvas.create_image(x*SQUARE_SIZE + BORDER_SIZE, y*SQUARE_SIZE+BORDER_SIZE, anchor="nw", image=imgList[count], tag="case")
 
 # the following functions are binded to the keyboard arrows
 # each one will juste call the move function with its own parameter
 def leftKey(e):
-    b.move("left")
-    next()
+    same = b.move("left")
+    next(same)
 
 def rightKey(e):
-    b.move("right")
-    next()
+    same = b.move("right")
+    next(same)
 
 def upKey(e):
-    b.move("up")
-    next()
+    same = b.move("up")
+    next(same)
 
 def downKey(e):
-    b.move("down")
-    next()
+    same = b.move("down")
+    next(same)
 
+def click(e):
+    if b.isLoose():
+        reset()
 
 # this function will juste update graphics and test the win and loose condition
 # used to avoid redundancy in the 4 function above
-def next():
-    graphics()
+def next(same):
     if b.isLoose():
         canvas.config(bg=LOOSE_COLOR)
-        label.config(text="FLOPP")
+        label.config(text="GROS FLOPP")
     elif b.isWin():
         canvas.config(bg=WIN_COLOR)
-        label.config(text="WINNN")
-    else:
+        label.config(text="RATIO REUSSI")
+    elif not same:
         b.add_number()
-
+    graphics()
 
 # creating the main window and components
 window = Tk()
@@ -184,14 +212,25 @@ window.bind('<Left>', leftKey)
 window.bind('<Right>', rightKey)
 window.bind('<Up>', upKey)
 window.bind('<Down>', downKey)
+window.bind('<Button-1>', click)
 
 # GAME
 b=Board()
 b.add_number()
 b.add_number()
 
-imgList=[]
-
+imgList=[[(ImageTk.PhotoImage(Image.open("img/2.png").resize((SQUARE_SIZE, SQUARE_SIZE))))], 
+         [(ImageTk.PhotoImage(Image.open("img/4.png").resize((SQUARE_SIZE, SQUARE_SIZE))))],
+         [(ImageTk.PhotoImage(Image.open("img/8.png").resize((SQUARE_SIZE, SQUARE_SIZE))))],
+         [(ImageTk.PhotoImage(Image.open("img/16.png").resize((SQUARE_SIZE, SQUARE_SIZE))))],
+         [(ImageTk.PhotoImage(Image.open("img/32.png").resize((SQUARE_SIZE, SQUARE_SIZE))))],
+         [(ImageTk.PhotoImage(Image.open("img/64.png").resize((SQUARE_SIZE, SQUARE_SIZE))))],
+         [(ImageTk.PhotoImage(Image.open("img/128.png").resize((SQUARE_SIZE, SQUARE_SIZE))))],
+         [(ImageTk.PhotoImage(Image.open("img/256.png").resize((SQUARE_SIZE, SQUARE_SIZE))))],
+         [(ImageTk.PhotoImage(Image.open("img/512.png").resize((SQUARE_SIZE, SQUARE_SIZE))))],
+         [(ImageTk.PhotoImage(Image.open("img/1024.png").resize((SQUARE_SIZE, SQUARE_SIZE))))],
+         [(ImageTk.PhotoImage(Image.open("img/2048.png").resize((SQUARE_SIZE, SQUARE_SIZE))))]]
+        
 graphics()
 
 window.mainloop()
