@@ -197,16 +197,6 @@ canvas.pack()
 
 window.update()
 
-windowWidth = window.winfo_width()
-windowHeight = window.winfo_height()
-screenWidth = window.winfo_screenwidth()
-screenHeight = window.winfo_screenheight()
-
-x = int((screenWidth/2) - (windowWidth/2))
-y = int((screenHeight/2) - (windowHeight/2))
-
-window.geometry(f"{windowWidth}x{windowHeight}+{x}+{y}")
-
 # BINDINGS
 window.bind('<Left>', leftKey)
 window.bind('<Right>', rightKey)
